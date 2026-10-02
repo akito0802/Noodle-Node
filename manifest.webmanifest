@@ -9,7 +9,7 @@
   "theme_color": "#081426",
   "icons": [
     {
-      "src": "./apple-touch-icon-v4.png",
+      "src": "https://akito0802.github.io/Noodle-Node/apple-touch-icon-20261002.png?v=2",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
