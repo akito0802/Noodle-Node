@@ -3,13 +3,14 @@
   "short_name": "Noodle Node",
   "description": "絡まった思考をほどき、つないで、形にする。",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#081426",
   "theme_color": "#081426",
   "icons": [
     {
-      "src": "./assets/icon-64.png",
-      "sizes": "64x64",
+      "src": "./apple-touch-icon-v4.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     }
