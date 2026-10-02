@@ -129,3 +129,30 @@ body[data-theme="dark"]{--panel:#0f131d;--panel2:#151b28}
 @media(max-width:760px){.cards{grid-template-columns:1fr}.map-card{min-height:auto}.folders{grid-template-columns:1fr}.shell{padding-left:12px;padding-right:12px}.hero{padding:20px 16px}.chinatown{width:170px;opacity:.58}.compare-grid{grid-template-columns:repeat(2,260px)}}
 @media(min-width:900px){#app{padding-bottom:30px}.bottom-nav{position:sticky;bottom:16px;margin:0 auto}.fab{right:max(24px,calc((100vw - 1080px)/2));bottom:42px}}
 @media print{.scene,.bottom-nav,.topbar,.fab,.no-print{display:none!important}body{background:#fff;color:#111}.shell{width:100%;max-width:none}.summary-box{background:#fff;border-color:#ddd;box-shadow:none}}
+
+
+/* Mandala chart / 81-cell goal planning */
+.mandala-wrap{padding:12px}
+.mandala-scroll{overflow:auto;-webkit-overflow-scrolling:touch;padding:4px}
+.mandala-board{display:grid;grid-template-columns:repeat(3,300px);grid-template-rows:repeat(3,258px);gap:10px;width:max-content;min-width:100%}
+.mandala-block{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);border:1px solid rgba(255,255,255,.16);border-radius:16px;overflow:hidden;background:rgba(4,12,23,.52);box-shadow:0 12px 28px rgba(0,0,0,.16)}
+.mandala-block.mandala-main{border-color:rgba(215,166,61,.55);box-shadow:0 0 26px rgba(215,166,61,.14)}
+.mandala-cell{min-width:0;border:0;border-right:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);background:rgba(11,29,53,.82);color:var(--text);padding:8px;font-size:12px;font-weight:700;line-height:1.35;overflow-wrap:anywhere;cursor:pointer}
+.mandala-cell:nth-child(3n){border-right:0}
+.mandala-cell:nth-child(n+7){border-bottom:0}
+.mandala-cell:hover,.mandala-cell:focus{outline:none;background:rgba(30,61,100,.9)}
+.mandala-center{background:rgba(227,58,70,.26);color:#ffd8da}
+.mandala-goal{background:linear-gradient(145deg,rgba(168,42,47,.92),rgba(102,24,35,.95));color:#fff1c1;box-shadow:inset 0 0 0 1px rgba(255,208,106,.45);font-size:13px}
+.mandala-category{background:rgba(215,166,61,.17);color:#ffe5a3}
+.mandala-action{background:rgba(9,25,48,.86);color:#dce7f5;font-weight:600}
+.mandala-legend{display:flex;flex-wrap:wrap;gap:12px;padding:12px 6px 2px;color:var(--muted);font-size:12px}
+.mandala-legend span{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.legend-dot.goal{background:var(--red)}
+.legend-dot.category{background:var(--gold)}
+.legend-dot.action{background:#294e78}
+@media(max-width:760px){
+  .mandala-board{grid-template-columns:repeat(3,258px);grid-template-rows:repeat(3,222px);gap:7px}
+  .mandala-cell{font-size:11px;padding:6px}
+  .mandala-wrap{padding:8px}
+}
