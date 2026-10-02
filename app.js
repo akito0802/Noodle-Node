@@ -8,6 +8,19 @@ function id(){return 'id-'+Math.random().toString(36).slice(2,9)}
 function now(){return new Date().toISOString()}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
 function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+function newMandala(goal){
+  return {
+    goal: goal||'最終目標',
+    categories:[
+      '要素1','要素2','要素3','要素4','要素5','要素6','要素7','要素8'
+    ].map(function(name){return {name:name,actions:['','','','','','','','']}})
+  }
+}
+function ensureMandala(m){
+  if(!m.mandala)m.mandala=newMandala(m.title||'最終目標');
+  if(!m.mandala.categories||m.mandala.categories.length!==8)m.mandala=newMandala(m.title||'最終目標');
+  return m.mandala;
+}
 function defaultMap(title){
   var c=id(),a=id(),b=id(),d=id(),e=id();
   return {id:id(),title:title||'無題',updatedAt:now(),view:'mind',zoom:1,conclusion:'',decidedCandidate:null,
@@ -19,6 +32,7 @@ function defaultMap(title){
       {id:e,title:'重要ポイント',memo:'',x:130,y:410,color:'gold',importance:3,task:false,done:false,due:'',priority:3,tags:[]}
     ],
     edges:[[c,a],[c,b],[c,d],[c,e]],
+    mandala:newMandala(title||'最終目標'),
     compare:{criteria:[{id:id(),name:'メリット',weight:3},{id:id(),name:'実現性',weight:3},{id:id(),name:'コスト',weight:2}],candidates:[{id:id(),name:'パターンA',scores:[4,3,2]},{id:id(),name:'パターンB',scores:[3,4,4]}]}
   }
 }
@@ -96,14 +110,42 @@ function renderNode(m,n,i){
   if(n.tags&&n.tags.length)meta.push(n.tags.join(' · '));
   return '<div class="node '+(n.center?'center ':'')+(n.importance===3?'important ':'')+(n.done?'task-done ':'')+'" data-node="'+n.id+'" style="left:'+p.x+'px;top:'+p.y+'px;border-color:'+nodeColor(n)+'"><div class="node-title">'+escapeHtml(n.title)+'</div><div class="node-meta">'+escapeHtml(meta.join(' / '))+'</div></div>';
 }
+function renderMandala(m){
+  var md=ensureMandala(m);
+  function block(categoryIndex){
+    var center=categoryIndex===null;
+    var cells=[];
+    for(var i=0;i<9;i++){
+      if(i===4){
+        cells.push('<button class="mandala-cell mandala-center '+(center?'mandala-goal':'')+'" data-mandala-kind="'+(center?'goal':'category')+'" '+(center?'':'data-mandala-category="'+categoryIndex+'"')+'>'+escapeHtml(center?md.goal:md.categories[categoryIndex].name)+'</button>');
+      }else{
+        var aroundIndex=i<4?i:i-1;
+        if(center){
+          var ci=aroundIndex;
+          cells.push('<button class="mandala-cell mandala-category" data-mandala-kind="category" data-mandala-category="'+ci+'">'+escapeHtml(md.categories[ci].name)+'</button>');
+        }else{
+          var text=md.categories[categoryIndex].actions[aroundIndex]||'＋ 行動';
+          cells.push('<button class="mandala-cell mandala-action" data-mandala-kind="action" data-mandala-category="'+categoryIndex+'" data-mandala-action="'+aroundIndex+'">'+escapeHtml(text)+'</button>');
+        }
+      }
+    }
+    return '<section class="mandala-block '+(center?'mandala-main':'')+'">'+cells.join('')+'</section>';
+  }
+  var order=[0,1,2,3,null,4,5,6,7];
+  return '<div class="mandala-scroll"><div class="mandala-board">'+order.map(block).join('')+'</div></div>'+
+    '<div class="mandala-legend"><span><b class="legend-dot goal"></b>最終目標</span><span><b class="legend-dot category"></b>8つの要素</span><span><b class="legend-dot action"></b>具体行動</span></div>';
+}
 function renderMap(){
   var m=currentMap();if(!m)return renderHome();
-  var views=[['mind','マインド'],['free','自由配置'],['list','リスト'],['flow','フロー']];
+  var views=[['mind','マインド'],['free','自由配置'],['list','リスト'],['flow','フロー'],['mandala','マンダラ']];
   var chips=views.map(function(v){return '<button class="chip '+(m.view===v[0]?'active':'')+'" data-view="'+v[0]+'">'+v[1]+'</button>'}).join('');
+  var editor=m.view==='mandala'
+    ? '<div class="editor-wrap mandala-wrap">'+renderMandala(m)+'</div>'
+    : '<div class="editor-wrap"><div class="canvas-scroll"><div class="canvas-surface" id="canvas-surface" style="transform:scale('+m.zoom+')"><svg class="edge-layer" viewBox="0 0 900 620">'+renderEdges(m)+'</svg>'+m.nodes.map(function(n,i){return renderNode(m,n,i)}).join('')+'</div></div></div>';
   return shell('<div class="topbar"><button class="icon-btn" data-nav="home">'+icon('back')+'</button><div class="title">'+escapeHtml(m.title)+'</div><button class="icon-btn" data-action="search">'+icon('search')+'</button><button class="icon-btn" data-action="share">'+icon('share')+'</button></div>'+
-    '<div class="view-row">'+chips+'<button class="chip" data-action="zoom-out">−</button><button class="chip" data-action="zoom-in">＋</button><button class="chip" data-nav="summary">まとめ</button></div>'+
-    '<div class="editor-wrap"><div class="canvas-scroll"><div class="canvas-surface" id="canvas-surface" style="transform:scale('+m.zoom+')"><svg class="edge-layer" viewBox="0 0 900 620">'+renderEdges(m)+'</svg>'+m.nodes.map(function(n,i){return renderNode(m,n,i)}).join('')+'</div></div></div>'+
-    '<button class="fab" data-action="add-node">＋</button>');
+    '<div class="view-row">'+chips+(m.view==='mandala'?'':'<button class="chip" data-action="zoom-out">−</button><button class="chip" data-action="zoom-in">＋</button>')+'<button class="chip" data-nav="summary">まとめ</button></div>'+
+    editor+
+    (m.view==='mandala'?'':'<button class="fab" data-action="add-node">＋</button>'));
 }
 function allTasks(){
   var out=[];data.maps.forEach(function(m){m.nodes.forEach(function(n){if(n.task)out.push({map:m,node:n})})});return out;
@@ -141,7 +183,8 @@ function renderTemplates(){
     ['悩み整理','事実 → 気持ち → 選択肢 → 結論'],
     ['アイデア出し','中心テーマから自由に発想を広げる'],
     ['比較・意思決定','候補を評価して決める'],
-    ['目標整理・計画','目標から必要な行動を分解する']
+    ['目標整理・計画','目標から必要な行動を分解する'],
+    ['マンダラチャート','中心目標 → 8つの要素 → 各8つの具体行動へ、81マスで展開する']
   ];
   return shell('<div class="topbar"><div class="title">テンプレート</div></div><div class="cards">'+t.map(function(x,i){return '<article class="template-card"><h3>'+x[0]+'</h3><p>'+x[1]+'</p><button class="primary" data-template="'+i+'">この型で始める</button></article>'}).join('')+'</div>');
 }
@@ -208,7 +251,14 @@ function newMap(title){
   var m=defaultMap(title||'無題');data.maps.unshift(m);ui.currentMapId=m.id;ui.screen='map';save();render()
 }
 function useTemplate(i){
-  var names=['悩み整理','アイデア出し','比較・意思決定','目標整理・計画'];newMap(names[i])
+  var names=['悩み整理','アイデア出し','比較・意思決定','目標整理・計画','マンダラチャート'];
+  if(i===4){
+    var m=defaultMap('マンダラチャート');
+    m.view='mandala';
+    m.mandala=newMandala('達成したい目標');
+    data.maps.unshift(m);ui.currentMapId=m.id;ui.screen='map';save();render();return;
+  }
+  newMap(names[i])
 }
 function addNode(){
   var m=currentMap(),center=m.nodes.find(function(n){return n.center});
@@ -233,7 +283,7 @@ function exportBackup(){
   var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='noodle-node-backup.json';a.click();URL.revokeObjectURL(a.href)
 }
 function bindDrag(){
-  var m=currentMap();if(!m||m.view==='list')return;
+  var m=currentMap();if(!m||m.view==='list'||m.view==='mandala')return;
   document.querySelectorAll('.node').forEach(function(el){
     var node=m.nodes.find(function(n){return n.id===el.dataset.node});if(!node)return;
     var sx,sy,ox,oy,moved=false;
@@ -247,6 +297,23 @@ app.addEventListener('click',function(e){
   var navEl=e.target.closest('[data-nav]');if(navEl){ui.screen=navEl.dataset.nav;render();return}
   var open=e.target.closest('[data-open-map]');if(open){ui.currentMapId=open.dataset.openMap;ui.screen='map';render();return}
   var node=e.target.closest('[data-node]');if(node){openSheet(node.dataset.node);return}
+  var mandala=e.target.closest('[data-mandala-kind]');
+  if(mandala){
+    var mm=currentMap(),md=ensureMandala(mm),kind=mandala.dataset.mandalaKind;
+    if(kind==='goal'){
+      var goal=prompt('中央の最終目標',md.goal);if(goal!==null&&goal.trim())md.goal=goal.trim();
+    }
+    if(kind==='category'){
+      var ci=Number(mandala.dataset.mandalaCategory),cat=prompt('目標達成に必要な要素',md.categories[ci].name);
+      if(cat!==null&&cat.trim())md.categories[ci].name=cat.trim();
+    }
+    if(kind==='action'){
+      var cii=Number(mandala.dataset.mandalaCategory),ai=Number(mandala.dataset.mandalaAction);
+      var act=prompt('この要素を実現する具体行動',md.categories[cii].actions[ai]||'');
+      if(act!==null)md.categories[cii].actions[ai]=act.trim();
+    }
+    touchMap(mm);render();return
+  }
   var action=e.target.closest('[data-action]');
   if(action){
     var a=action.dataset.action,m=currentMap();
