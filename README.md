@@ -10,8 +10,8 @@ Implemented in this first version:
 - Night Chinatown × starry sky × neon visual identity
 - Mobile-first home with recent maps, folders, favorites and search
 - Mind-map canvas with draggable nodes and connectors
-- Mind / free / list / flow view switching
-- Node detail bottom sheet with memo, tags, importance and task fields
+- Mind / free / list / flow / 81-cell Mandala chart view switching
+- 81-cell goal planning: central goal → 8 success factors → 8 concrete actions for each factor\n- Node detail bottom sheet with memo, tags, importance and task fields
 - Task view
 - Comparison / decision view with weighted scoring
 - Final summary view with text export and print/PDF
